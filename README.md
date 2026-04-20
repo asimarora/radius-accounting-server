@@ -25,7 +25,8 @@ This launches four containers:
 
 ## Storage Backends
 
---> `in-memory` :Development and testing — no external dependencies 
+--> `in-memory` :Development and testing — no external dependencies
+ 
 --> `redis`     :Production — persistent, TTL-based expiry handled by Redis
 
 Verify subscriber log:
