@@ -1,0 +1,21 @@
+# shared_secret and redis.password MUST come from environment
+
+storage:
+  backend: "redis"
+
+redis:
+  addr: "redis:6379"
+  password: ""
+  db: 0
+
+logging:
+  level: "warn"
+  file_path: "/var/log/radius_updates.log"
+  max_size_mb: 100
+  max_backups: 10
+  max_age_days: 90
+  compress: true
+
+subscriber:
+  reconnect_interval: "2s"
+  max_reconnect_retry: 0

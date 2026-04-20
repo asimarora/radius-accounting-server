@@ -1,0 +1,80 @@
+version: "3.8"
+
+services:
+  redis:
+    image: redis:7-alpine
+    command: redis-server --notify-keyspace-events KEA --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - radius-net
+
+  radius-controlplane:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        BUILD_TARGET: server
+    ports:
+      - "1813:1813/udp"
+
+    environment:
+      APP_ENV: production
+      RADIUS_SHARED_SECRET: "testing123"
+
+    volumes:
+      - ./configs:/etc/radius/configs:ro
+
+    depends_on:
+      redis:
+        condition: service_healthy
+
+    networks:
+      - radius-net
+
+  redis-controlplane-logger:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        BUILD_TARGET: logger
+
+    environment:
+      APP_ENV: production
+      RADIUS_SHARED_SECRET: "testing123"
+
+    volumes:
+      - ./configs:/etc/radius/configs:ro
+      - log-data:/var/log
+
+    depends_on:
+      redis:
+        condition: service_healthy
+
+    networks:
+      - radius-net
+
+  radclient-test:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.radclient
+    depends_on:
+      - radius-controlplane
+    networks:
+      - radius-net
+
+volumes:
+  redis-data:
+  log-data:
+
+networks:
+  radius-net:
+    driver: bridge

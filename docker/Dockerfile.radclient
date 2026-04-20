@@ -1,0 +1,14 @@
+FROM freeradius/freeradius-server:latest
+
+RUN apt-get update
+
+RUN apt-get install -y freeradius-utils
+
+COPY test/acct_start.txt /tmp/acct_start.txt
+COPY test/acct_stop.txt /tmp/acct_stop.txt
+COPY test/test_radius.sh /test_radius.sh
+
+RUN chmod +x test_radius.sh
+
+ENTRYPOINT ["./test_radius.sh"]
+

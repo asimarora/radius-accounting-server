@@ -1,0 +1,36 @@
+version: "3.8"
+
+# Testing environment — Uses in-memory backend, no Redis
+
+services:
+  radius-controlplane:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        BUILD_TARGET: server
+    ports:
+      - "1813:1813/udp"
+
+    environment:
+      APP_ENV: testing
+      RADIUS_SHARED_SECRET: "testing123"
+
+    volumes:
+      - ./configs:/etc/radius/configs:ro
+
+    networks:
+      - radius-net
+
+  radclient-test:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.radclient
+    depends_on:
+      - radius-controlplane
+    networks:
+      - radius-net
+
+networks:
+  radius-net:
+    driver: bridge

@@ -1,0 +1,9 @@
+radius:
+  shared_secret: "testing123"
+  session_ttl: "1h"
+
+storage:
+  cleanup_interval: "10s"
+
+logging:
+  level: "debug"

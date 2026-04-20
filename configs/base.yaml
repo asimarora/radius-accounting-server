@@ -1,0 +1,12 @@
+# Shared defaults across all environments.
+
+radius:
+  listen_addr: ":1813"
+  session_ttl: "24h"
+
+storage:
+  backend: "in-memory"
+  cleanup_interval: "10s"
+
+logging:
+  level: "info"
