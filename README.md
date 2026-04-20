@@ -55,7 +55,9 @@ go test ./internal/store/ -v -race
 Assumptions:
 
 1: Logs streamed to stdout
+
 2: Random record deleted when max limit hit. This is not LRU/LFU — it's a deliberate simplicity trade-off for a dev/test backend.
+
 3: Single UDP listener is started.  Worker pool size can be tuned based on load requirements.
 
 
