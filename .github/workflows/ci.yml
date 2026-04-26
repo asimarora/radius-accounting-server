@@ -23,5 +23,50 @@ jobs:
       - name: Download dependencies
         run: go mod download
 
-      - name: Run tests
+      - name: Run unit tests
         run: go test ./internal/store/ -v -race
+
+  integration:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build containers
+        run: docker compose -f docker-compose.testing.yaml build
+
+      - name: Start radius-controlplane
+        run: docker compose -f docker-compose.testing.yaml up -d radius-controlplane
+
+      - name: Wait for RADIUS server to be ready
+        run: |
+          echo "Waiting for radius-controlplane to start..."
+          for i in $(seq 1 15); do
+            if docker compose -f docker-compose.testing.yaml ps radius-controlplane | grep -q "Up\|running"; then
+              echo "Server is up."
+              sleep 2
+              break
+            fi
+            echo "Attempt $i: not ready yet..."
+            sleep 2
+          done
+
+      - name: Run radclient integration tests
+        run: |
+          docker compose -f docker-compose.testing.yaml run --rm radclient-test
+          EXIT_CODE=$?
+          if [ $EXIT_CODE -ne 0 ]; then
+            echo "Integration test failed with exit code $EXIT_CODE"
+            exit $EXIT_CODE
+          fi
+          echo "Integration tests passed."
+
+      - name: Show radius-controlplane logs
+        if: always()
+        run: docker compose -f docker-compose.testing.yaml logs radius-controlplane
+
+      - name: Tear down
+        if: always()
+        run: docker compose -f docker-compose.testing.yaml down
